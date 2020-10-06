@@ -1,0 +1,5 @@
+# ignore model files temporarly
+models/*
+
+# ignore pycache folders
+*__pycache__*
