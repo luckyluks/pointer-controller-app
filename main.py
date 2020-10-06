@@ -2,6 +2,7 @@ import os
 import cv2
 import time
 
+import numpy as np
 import logging as log
 from tqdm import tqdm
 from argparse import ArgumentParser
@@ -64,6 +65,7 @@ def infer_on_stream(args):
                 # Exit progress bar
                 pbar.close()
                 log.info("Input stream ended!")
+                log.info(f"Average inference time: {np.mean(inference_time_dict['total']):.1f}ms")
                 break
 
             # Start inference time
@@ -128,7 +130,7 @@ def infer_on_stream(args):
 
             # Update progress bar
             pbar.update(1)
-            pbar.set_postfix({'inference time': f"{total_inference_time:.2f}ms"})
+            pbar.set_postfix({'inference time': f"{total_inference_time:.1f}ms"})
 
     except Exception as e:
         log.error(f"Could not run Inference ({type(e).__name__}): {e}")
