@@ -8,3 +8,4 @@ virtualenv==16.7.9
 pyautogui
 pyyaml 
 opencv-python
+tqdm
