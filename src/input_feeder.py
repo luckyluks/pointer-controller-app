@@ -54,7 +54,7 @@ class InputFeeder:
         initial_h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         fps = int(self.cap.get(cv2.CAP_PROP_FPS))
 
-        log.info(f"Loaded input stream: {self.input_file} (type: {self.input_type})")
+        log.info(f"Loaded input stream: \"{self.input_file}\" (type:{self.input_type}, fps:{fps}, format:{(initial_w, initial_h)})")
 
         return fps, (initial_w, initial_h)
 
