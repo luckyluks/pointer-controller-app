@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 import logging as log
 from openvino.inference_engine import IENetwork, IECore
@@ -40,6 +41,7 @@ class Model():
         self.check_model()
 
         # Load the model
+        start_time = time.time()
         self.network = self.core.load_network(network = self.model, device_name=self.device, num_requests=1)
 
         # Get input/output layers and shapes
@@ -49,7 +51,7 @@ class Model():
         self.output_shape = self.network.outputs[self.output_blob].shape
 
         # Print debug
-        log.debug(f"Model \"{self.__class__.__name__}\": sucessfully loaded!")
+        log.debug(f"Model \"{self.__class__.__name__}\": sucessfully loaded! (in {time.time()-start_time:.2f}s)")
 
     # def predict(self, image):
     #     """
