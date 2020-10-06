@@ -35,7 +35,7 @@ class FaceDetectionModel(Model):
         # Process network output
         if inference_status == 0:
             outputs = self.network.requests[request_id].outputs[self.output_blob]
-            out_image, coords = self.preprocess_output(outputs, image, draw_box)
+            out_image, coords = self.preprocess_output(outputs, image, draw_boxes)
             return out_image, coords, predict_end_time
 
     def preprocess_input(self, image):
