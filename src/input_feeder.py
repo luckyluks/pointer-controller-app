@@ -41,19 +41,29 @@ class InputFeeder:
         # Open correct input stream
         if self.input_type == "video":
             self.cap=cv2.VideoCapture(self.input_file)
+            # Gather meta data 
+            initial_w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            initial_h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = int(self.cap.get(cv2.CAP_PROP_FPS))
+
         elif self.input_type == "cam":
             self.cap=cv2.VideoCapture(0)
+            # Gather meta data 
+            initial_w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
+            initial_h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+            fps = int(self.cap.get(cv2.CAP_PROP_FPS))
+
         elif self.input_type == "image":
             self.cap=cv2.imread(self.input_file)
+            # Gather meta data 
+            initial_w = int(self.cap.shape[1])
+            initial_h = int(self.cap.shape[0])
+            fps = 1
+
         else:
             log.error(f"Given Source \"{self.input_file}\" (type: {self.input_type}) not supported!")
             sys.exit()
         
-        # Gather meta data 
-        initial_w = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-        initial_h = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-        fps = int(self.cap.get(cv2.CAP_PROP_FPS))
-
         log.info(f"Loaded input stream: \"{self.input_file}\" (type:{self.input_type}, fps:{fps}, format:{(initial_w, initial_h)})")
 
         return fps, (initial_w, initial_h)
@@ -64,10 +74,26 @@ class InputFeeder:
         If input_type is 'image', then it returns the same image.
         '''
         while True:
-            for _ in range(1):
-                _, frame=self.cap.read()
+            if self.input_type == "image":
+                # yield image
+                for i in [self.cap, None]:
+                    yield i
+            else:
+                # yield frame of capture object
+                for _ in range(1):
+                    _, frame=self.cap.read()
+                yield frame
 
-            yield frame
+    def get_framecount(self):
+        '''
+        Returns a frame count depending on the input type.
+        '''
+        if self.input_type == "video":
+            return int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        elif self.input_type == "cam":
+            return -1
+        elif self.input_type == "image":
+            return 1
 
 
     def close(self):
