@@ -25,6 +25,8 @@ def infer_on_stream(args):
     #     precision=args.mouse_precision, speed=args.mouse_speed
     # )
 
+    log.info(args.draw_prediction)
+
     # Load the models
     model_face_detection = FaceDetectionModel(args.model_face_detection)
     model_face_detection.load_model()
@@ -72,7 +74,7 @@ def infer_on_stream(args):
             time_start_face = time.time()
 
             # Do face detection
-            out_image, coords, face_detection_time = model_face_detection.predict(batch, draw_boxes=args.draw_prediction)
+            out_image, coords, face_detection_time = model_face_detection.predict(batch, draw_output=args.draw_prediction)
 
             # Do not go further if no face is detected
             if coords:
@@ -87,24 +89,27 @@ def infer_on_stream(args):
                         log.warn(f"Cropped frame size not sufficient (under 20px): {face.shape[:2]}")
                         continue
 
-                    # # TODO DO landmarks detection
-                    # facial_landmarks_pred_time, eyes_coords = facial_landmarks.predict(
-                    # face, show_bbox=args.show_bbox
-                    # )
+                    # TODO DO landmarks detection
+                    out_image_3, landmarks_info, landmarks_detection_time = model_landmarks_detection.predict(
+                    face, draw_output=args.draw_prediction
+                    )
+
+                    # cv2.imwrite("test_right.png", landmarks_info["right_eye_image"])
+                    # cv2.imwrite("test_left.png", landmarks_info["left_eye_image"])
 
                     # # TODO Do pose estimation
-                    # hp_est_pred_time, head_pose_angles = head_pose_estimation.predict(
-                    #     face, show_bbox=args.show_bbox
-                    # )
+                    out_image_2, pose_angels, pose_estimation_time = model_pose_estimation.predict(
+                        face, draw_output=args.draw_prediction
+                    )
 
                     # # TODO Do gaze estimation
-                    # gaze_pred_time, gaze_vector = gaze_estimation.predict(
-                    #     frame,
-                    #     show_bbox=args.show_bbox,
-                    #     face=face,
-                    #     eyes_coords=eyes_coords,
-                    #     head_pose_angles=head_pose_angles,
-                    # )
+                    out_image_2_4, gaze_vector, gaze_estimation_time = model_gaze_estimation.predict(
+                        batch,
+                        face=face,
+                        landmarks=landmarks_info,
+                        pose=pose_angels,
+                        draw_output=args.draw_prediction
+                    )
 
                     # if args.debug:
                     #     head_pose_estimation.show_text(frame, head_pose_angles)
@@ -118,13 +123,20 @@ def infer_on_stream(args):
 
             # Sum up inference time
             inference_time_dict["face"].append(face_detection_time)
-            total_inference_time = face_detection_time
+            inference_time_dict["pose"].append(pose_estimation_time)
+            inference_time_dict["landsmarks"].append(landmarks_detection_time)
+            inference_time_dict["gaze"].append(gaze_estimation_time)
+            
+            total_inference_time = face_detection_time \
+                                   + pose_estimation_time \
+                                   + landmarks_detection_time \
+                                   + gaze_estimation_time
             inference_time_dict["total"].append(total_inference_time)
 
             # Write on disk 
             if args.output:
                 if fps == 1:
-                    cv2.imwrite(os.path.splitext(args.input)[0] + "_out.png", face)
+                    cv2.imwrite(os.path.splitext(args.input)[0] + "_out.png", out_image)
                 else:
                     output_stream.write(out_image)
 
@@ -217,7 +229,7 @@ def build_argparser():
                         help="Probability threshold for detections filtering"
                              "(0.5 by default)")
 
-    parser.add_argument("--draw_prediction", type=bool, default=True,
+    parser.add_argument("-dp", "--draw_prediction", default=False, action='store_true',
                         help="(optional) Draw the prediction outputs.")
     # parser.add_argument("-mt", "--maximum_time", type=int, default=10,
     #                     help="Maximum time a detected person is in the frame"
