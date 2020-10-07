@@ -74,6 +74,47 @@ class PoseEstimationModel(Model):
 
         # Draw output, if applicable
         if draw_output:
-            pass
+            yaw, pitch, roll = pose_angles.values()
+
+            yaw = (yaw * np.pi / 180)
+            pitch = pitch * np.pi / 180
+            roll = roll * np.pi / 180
+
+            height, width = image.shape[:2]
+            tdx = width / 2
+            tdy = height / 2
+            size = 1000
+
+            # X-Axis pointing to right. drawn in red
+            x1 = size * (math.cos(yaw) * math.cos(roll)) + tdx
+            y1 = (
+                size
+                * (
+                    math.cos(pitch) * math.sin(roll)
+                    + math.cos(roll) * math.sin(pitch) * math.sin(yaw)
+                )
+                + tdy
+            )
+
+            # Y-Axis | drawn in green
+            #        v
+            x2 = size * (-math.cos(yaw) * math.sin(roll)) + tdx
+            y2 = -(
+                size
+                * (
+                    math.cos(pitch) * math.cos(roll)
+                    - math.sin(pitch) * math.sin(yaw) * math.sin(roll)
+                )
+                + tdy
+            )
+
+            # Z-Axis (out of the screen) drawn in blue
+            x3 = size * (math.sin(yaw)) + tdx
+            y3 = size * (-math.cos(yaw) * math.sin(pitch)) + tdy
+
+            cv2.line(image, (int(tdx), int(tdy)), (int(x1), int(y1)), (0, 0, 255), 3)
+            cv2.line(image, (int(tdx), int(tdy)), (int(x2), int(y2)), (0, 255, 0), 3)
+            cv2.line(image, (int(tdx), int(tdy)), (int(x3), int(y3)), (255, 0, 0), 2)
+
 
         return pose_angles, image
