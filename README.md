@@ -80,7 +80,7 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
         ```
     - Install external software dependencies (suggested by Intel)
         ```
-        sudo - E/opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh
+        sudo -E /opt/intel/openvino/install_dependencies/install_openvino_dependencies.sh
         ```
     - Source the environments variables (everytime before using OpenVINO) or add the source to ```~/.bashrc``` to automatically load the variables at shell start-up.
         ```
