@@ -15,9 +15,9 @@ from src.model_classes.gazeestimation_model import GazeEstimationModel
 
 # from src.mouse_controller import MouseController
 
-def infer_on_stream(args):
+def run_on_stream(args):
     """
-    
+    Run inference on stream (cam or video or image) and controll the mouse.
     """
 
     # # Load the mouse controller
@@ -25,7 +25,11 @@ def infer_on_stream(args):
     #     precision=args.mouse_precision, speed=args.mouse_speed
     # )
 
-    log.info(f"===== Setup: mouse enabled: {args.enable_mouse}, draw predicition results: {args.draw_prediction} =====")
+    # Detect lower log level
+    low_log_level = log.getLogger().level in [log.INFO, log.DEBUG]
+
+    log.info(f"{'='*10} Setup: mouse enabled: {args.enable_mouse}, " \
+             f"draw predicition results: {args.draw_prediction} {'='*10}")
 
     # Load the models
     model_face_detection = FaceDetectionModel(args.model_face_detection)
@@ -54,8 +58,9 @@ def infer_on_stream(args):
     }
         
     # Create progress bar
-    bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}{postfix}]"
-    pbar = tqdm(total=input_stream.get_framecount(), bar_format=bar_format)
+    if low_log_level:
+        bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}{postfix}]"
+        pbar = tqdm(total=input_stream.get_framecount(), bar_format=bar_format)
 
     # Start inference time
     time_start = time.time()
@@ -67,10 +72,13 @@ def infer_on_stream(args):
 
             # Break the loop, when playback ends
             if batch is None:
-                # Exit progress bar
-                pbar.close()
+                # Exit progress bar, if present
+                if low_log_level:
+                    pbar.close()
+                
+                # Log output
                 log.info("Input stream ended!")
-                log.info(f"Total processing time elapsed: {time.time()-time_start :.2f}s!")
+                log.info(f"Total processing time elapsed: {time.time()-time_start :.2f}s")
                 log.info(f"Average inference time: {np.mean(inference_time_dict['total']):.1f}ms")
                 break
 
@@ -91,7 +99,7 @@ def infer_on_stream(args):
                         continue
 
                     # TODO DO landmarks detection
-                    out_image_3, landmarks_info, landmarks_detection_time = model_landmarks_detection.predict(
+                    _, landmarks_info, landmarks_detection_time = model_landmarks_detection.predict(
                     face, draw_output=args.draw_prediction
                     )
 
@@ -99,12 +107,12 @@ def infer_on_stream(args):
                     # cv2.imwrite("test_left.png", landmarks_info["left_eye_image"])
 
                     # # TODO Do pose estimation
-                    out_image_2, pose_angels, pose_estimation_time = model_pose_estimation.predict(
+                    _, pose_angels, pose_estimation_time = model_pose_estimation.predict(
                         face, draw_output=args.draw_prediction
                     )
 
                     # # TODO Do gaze estimation
-                    out_image_2_4, gaze_vector, gaze_estimation_time = model_gaze_estimation.predict(
+                    _, gaze_vector, gaze_estimation_time = model_gaze_estimation.predict(
                         batch,
                         face=face,
                         landmarks=landmarks_info,
@@ -116,8 +124,9 @@ def infer_on_stream(args):
                     #     head_pose_estimation.show_text(frame, head_pose_angles)
                     #     gaze_estimation.show_text(frame, gaze_vector)
 
-                    # if args.enable_mouse:
-                    #     mouse_controller.move(gaze_vector[0], gaze_vector[1])
+                    if args.enable_mouse:
+                        print(gaze_vector)
+                        # mouse_controller.move(gaze_vector["x"], gaze_vector["y"])
 
             # Sum up inference time
             inference_time_dict["face"].append(face_detection_time)
@@ -139,37 +148,44 @@ def infer_on_stream(args):
                     output_stream.write(out_image)
 
             # Update progress bar
-            pbar.update(1)
-            pbar.set_postfix({'inference time': f"{total_inference_time:.1f}ms"})
+            if low_log_level:
+                pbar.update(1)
+                pbar.set_postfix({'inference time': f"{total_inference_time:.1f}ms"})
 
     except Exception as e:
         log.error(f"Could not run Inference ({type(e).__name__}): {e}")
+        return False
 
-    # Close Input stream
-    input_stream.close()
+    finally:
+        # Close Input stream
+        input_stream.close()
 
-    # Release Output stream if the writer selected TODO: replace
-    if output_stream:
-        output_stream.release()
-        
+        # Release Output stream if the writer selected
+        if output_stream:
+            output_stream.release()
+
+        if low_log_level:
+            pbar.close()
+    
+    return True
 
 
 def main():
     """
-    Load the network and parse the output.
-    :return: None
+    Run the application.
     """
-    # Set log level to log some info in console
-    log.basicConfig(level=log.DEBUG)
-    
     # Grab command line args
     args = build_argparser().parse_args()
+
+    # Set log level to log some info in console
+    log.basicConfig(level=args.log_level)
     
     # Perform inference on the input stream
-    infer_on_stream(args)
+    success = run_on_stream(args)
     
-    # Log end
-    log.info("[SUCCESS] Application finished!")
+    # Log end, if successful
+    if success:
+        log.info(f"{'='*10} [SUCCESS] Application finished! {'='*10}")
 
 
 def open_output(file_path, fps, frame_size):
@@ -231,6 +247,15 @@ def build_argparser():
                         help="(optional) Draw the prediction outputs.")
     parser.add_argument("-em", "--enable_mouse", default=False, action='store_true',
                         help="(optional) Enable mouse movement.")
+
+    parser.add_argument('-db', '--debug', action="store_const",
+                        dest="log_level", const=log.DEBUG, default=log.WARNING,
+                        help="(optional) Sets loging level to DEBUG, "
+                        "instead of WARNING (for developers).")
+    parser.add_argument('-v', '--verbose', action="store_const",
+                        dest="log_level", const=log.INFO,
+                        help="(optional) Sets loging level to INFO, "
+                        "instead of WARNING (for users).")
     
     return parser
 

@@ -17,7 +17,9 @@
                 // "--input", "bin/demo_image.png",
                 "--output", "bin/output.mp4",
                 "--draw_prediction",
-                // "--enable_mouse"
+                // "--enable_mouse",
+                // "--verbose",
+                "--debug",
             ],
         },
         {
@@ -33,8 +35,10 @@
                 "--model_gaze_estimation", "models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml",
                 "--input", "bin/demo_image.png",
                 "--output", "bin/output.mp4",
-                // "--draw_prediction"
-                // "--enable_mouse"
+                "--draw_prediction",
+                // "--enable_mouse",
+                // "--verbose",
+                "--debug",
             ],
         }
     ]
