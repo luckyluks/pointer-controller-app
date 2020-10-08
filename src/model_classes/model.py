@@ -1,11 +1,15 @@
 import os
 import sys
 import time
+import cv2
 
 import logging as log
+import numpy as np
+
+from abc import ABC, abstractmethod
 from openvino.inference_engine import IENetwork, IECore
 
-class Model():
+class Model(ABC):
     """
     This is the base model class, which can be used to inherit basic model utilities.
     """
@@ -51,14 +55,7 @@ class Model():
         self.output_shape = self.network.outputs[self.output_blob].shape
 
         # Print debug
-        log.debug(f"Model \"{self.__class__.__name__}\": sucessfully loaded! (in {time.time()-start_time:.2f}s)")
-
-    # def predict(self, image):
-    #     """
-    #     TODO: You will need to complete this method.
-    #     This method is meant for running predictions on the input image.
-    #     """
-    #     raise NotImplementedError
+        log.debug(f"Model \"{self.__class__.__name__}\": sucessfully loaded! (in {1000*(time.time()-start_time):.1f}ms)")
 
     def check_model(self):
         """
@@ -79,17 +76,90 @@ class Model():
             log.warn("Check whether extensions are available to add to IECore!")
             log.error(f"Unsupported layers found in: {self.__class__.__name__}")
             exit()
-        
-    # def preprocess_input(self, image):
-    #     """
-    #     Before feeding the data into the model for inference,
-    #     you might have to preprocess it. This function is where you can do that.
-    #     """
-    #     raise NotImplementedError
 
-    # def preprocess_output(self, outputs):
-    #     """
-    #     Before feeding the output of this model to the next model,
-    #     you might have to preprocess the output. This function is where you can do that.
-    #     """
-    #     raise NotImplementedError
+    def preprocess_input(self, image, width=None, height=None, **kwargs):
+
+        model_input_dict = dict()
+
+        # determine if input is only image or more
+        if all(any(x == y for y in kwargs.keys()) for x in ["landmarks", "pose"]):
+
+            # Pre-process left eye image
+            model_input_dict["left_eye_image"] = self.preprocess_image_input(kwargs["landmarks"]["left_eye_image"], 
+                self.model.inputs["left_eye_image"].shape[2], 
+                self.model.inputs["left_eye_image"].shape[3]
+            )
+
+            # Pre-process right eye image
+            model_input_dict["right_eye_image"] = self.preprocess_image_input(kwargs["landmarks"]["right_eye_image"], 
+                self.model.inputs["right_eye_image"].shape[2], 
+                self.model.inputs["right_eye_image"].shape[3]
+            )
+
+            # Pre-process head pose
+            model_input_dict["head_pose_angles"] = np.array(list(kwargs["pose"].values()))
+            return model_input_dict
+
+        else:
+            # Pre-process single image
+            model_input_dict[self.input_blob] = self.preprocess_image_input(image, width=None, height=None)
+            return model_input_dict
+        
+    def preprocess_image_input(self, image, width=None, height=None):
+        """
+        Preprocess image input (use before feeding it to the network).
+        """
+        # Get the input shape, if input is None
+        if (width is None) or (height is None):
+            _, _, height, width = self.input_shape
+        
+        # Scale Image and Change data layout
+        p_frame = cv2.resize(image, (width, height))
+        p_frame = p_frame.transpose((2, 0, 1))
+        p_frame = p_frame.reshape(1, *p_frame.shape)
+        return p_frame
+
+    def predict(self, image, request_id=0, draw_output=False, **kwargs):
+        """
+        Predict the bounding box for the given image
+        """
+        # Check valid input
+        self.check_input(image, **kwargs)
+
+        # Pre-process the image
+        input_dict = self.preprocess_input(image, **kwargs)
+
+        # Do the inference
+        predict_start_time = time.time()
+        
+        self.network.start_async(request_id=request_id, 
+            inputs=input_dict
+        )
+        inference_status = self.network.requests[request_id].wait(-1)
+        inference_time_ms = (time.time() - predict_start_time) * 1000
+
+        # Process network output
+        if inference_status == 0:
+
+            # Parse network output
+            results = {}
+            for output_name in self.model.outputs.keys():
+                results[output_name] = self.network.requests[request_id].outputs[output_name]
+            
+            # Process output
+            out_image, ouput = self.preprocess_output(results, image, draw_output, **kwargs)
+            return out_image, ouput, inference_time_ms
+
+    @abstractmethod
+    def preprocess_output(self, results, image, draw_output=False, **kwargs):
+        """
+        Process model output. Additionally, draw output to the given image, if draw_output is true.
+        """
+        raise NotImplementedError("This method is not generally implemented!")
+
+    @abstractmethod
+    def check_input(self, image, **kwargs):
+        """
+        Check model input, depending on the model,
+        """
+        raise NotImplementedError("This method is not generally implemented!")
