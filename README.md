@@ -116,9 +116,10 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
         ```
         python3 -m pip install -r requirements.txt
         ```
-    - Download the required model. Optionally other models could be used and replace them.
+    - Download the required model. Optionally other models could be used and replace them.  
+      Use the ```--all_available_precisions``` flag to download all available precisions!
         ```
-        ./download_models.sh
+        ./download_models.sh --all_available_precisions
         ```
         This creates a new directory ```models/``` and downloads the models (face-detection-adas-binary-0001, head-pose-estimation-adas-0001, landmarks-regression-retail-0009, gaze-estimation-adas-0002) in all available precisions into this new directory using the OpenVINO model downloader.
 
