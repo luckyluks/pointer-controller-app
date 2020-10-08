@@ -25,7 +25,7 @@ def infer_on_stream(args):
     #     precision=args.mouse_precision, speed=args.mouse_speed
     # )
 
-    log.info(args.draw_prediction)
+    log.info(f"===== Setup: mouse enabled: {args.enable_mouse}, draw predicition results: {args.draw_prediction} =====")
 
     # Load the models
     model_face_detection = FaceDetectionModel(args.model_face_detection)
@@ -57,6 +57,9 @@ def infer_on_stream(args):
     bar_format="{l_bar}{bar}|{n_fmt}/{total_fmt} [{elapsed}<{remaining}{postfix}]"
     pbar = tqdm(total=input_stream.get_framecount(), bar_format=bar_format)
 
+    # Start inference time
+    time_start = time.time()
+
     # Catch unexpected behaviour at the inference
     try:
         # Fetch next frame batch
@@ -67,11 +70,9 @@ def infer_on_stream(args):
                 # Exit progress bar
                 pbar.close()
                 log.info("Input stream ended!")
+                log.info(f"Total processing time elapsed: {time.time()-time_start :.2f}s!")
                 log.info(f"Average inference time: {np.mean(inference_time_dict['total']):.1f}ms")
                 break
-
-            # Start inference time
-            time_start_face = time.time()
 
             # Do face detection
             out_image, coords, face_detection_time = model_face_detection.predict(batch, draw_output=args.draw_prediction)
@@ -116,10 +117,7 @@ def infer_on_stream(args):
                     #     gaze_estimation.show_text(frame, gaze_vector)
 
                     # if args.enable_mouse:
-                    #     mouse_controller.move(gaze_vector["x"], gaze_vector["y"])
-
-
-
+                    #     mouse_controller.move(gaze_vector[0], gaze_vector[1])
 
             # Sum up inference time
             inference_time_dict["face"].append(face_detection_time)
@@ -231,12 +229,8 @@ def build_argparser():
 
     parser.add_argument("-dp", "--draw_prediction", default=False, action='store_true',
                         help="(optional) Draw the prediction outputs.")
-    # parser.add_argument("-mt", "--maximum_time", type=int, default=10,
-    #                     help="Maximum time a detected person is in the frame"
-    #                          " before a warning appears (in seconds)")
-    # parser.add_argument("-mr", "--maximum_requests", type=int, default=4,
-    #                     help="Maximum numer of requests that can be handled"
-    #                          " by the network at once (integer)")
+    parser.add_argument("-em", "--enable_mouse", default=False, action='store_true',
+                        help="(optional) Enable mouse movement.")
     
     return parser
 
