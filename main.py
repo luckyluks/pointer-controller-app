@@ -114,10 +114,10 @@ def run_on_stream(args):
                     # # TODO Do gaze estimation
                     _, gaze_vector, gaze_estimation_time = model_gaze_estimation.predict(
                         batch,
+                        draw_output=args.draw_prediction,
                         face=face,
                         landmarks=landmarks_info,
-                        pose=pose_angels,
-                        draw_output=args.draw_prediction
+                        pose=pose_angels
                     )
 
                     # if args.debug:
@@ -140,10 +140,14 @@ def run_on_stream(args):
                                    + gaze_estimation_time
             inference_time_dict["total"].append(total_inference_time)
 
-            # Write on disk 
+            # Write on disk (if fps is 1, then the output is image!)
             if args.output:
                 if fps == 1:
-                    cv2.imwrite(os.path.splitext(args.input)[0] + "_out.png", out_image)
+                    # Check output path and create "_out" filename, if needed
+                    if args.output.endswith((".jpg", ".bmp", ".png")):
+                        cv2.imwrite(args.output, out_image)
+                    else:
+                        cv2.imwrite(os.path.splitext(args.input)[0] + "_out.png", out_image)
                 else:
                     output_stream.write(out_image)
 
@@ -231,16 +235,16 @@ def build_argparser():
 
     parser.add_argument("-l", "--cpu_extension", required=False, type=str,
                         default=None,
-                        help="MKLDNN (CPU)-targeted custom layers."
+                        help="(optional) MKLDNN (CPU)-targeted custom layers."
                              "Absolute path to a shared library with the"
                              "kernels impl.")
     parser.add_argument("-d", "--device", type=str, default="CPU",
-                        help="Specify the target device to infer on: "
+                        help="(optional) Specify the target device to infer on: "
                              "CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
                              "will look for a suitable plugin for device "
                              "specified (CPU by default)")
     parser.add_argument("-pt", "--prob_threshold", type=float, default=0.5,
-                        help="Probability threshold for detections filtering"
+                        help="(optional) Set probability threshold for detections filtering"
                              "(0.5 by default)")
 
     parser.add_argument("-dp", "--draw_prediction", default=False, action='store_true',
