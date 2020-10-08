@@ -8,6 +8,7 @@ import logging as log
 
 from src.model_classes.model import Model
 
+
 class PoseEstimationModel(Model):
     """
     Class for the Pose Estimation Model.
@@ -75,6 +76,7 @@ class PoseEstimationModel(Model):
 
 
         return image, pose_angles
+
 
     def check_input(self, image, **kwargs):
         """

@@ -9,9 +9,11 @@ import numpy as np
 from abc import ABC, abstractmethod
 from openvino.inference_engine import IENetwork, IECore
 
+
 class Model(ABC):
     """
     This is the base model class, which can be used to inherit basic model utilities.
+    The class is based on the Abstract Base Class (ABC), which allows to use abstract (placeholder) methods.
     """
     def __init__(self, model_name, device="CPU", extensions=None, probability_threshold=0.5):
         """
@@ -55,7 +57,9 @@ class Model(ABC):
         self.output_shape = self.network.outputs[self.output_blob].shape
 
         # Print debug
-        log.debug(f"Model \"{self.__class__.__name__}\": sucessfully loaded! (in {1000*(time.time()-start_time):.1f}ms)")
+        log.debug(f"Model \"{self.__class__.__name__}\": "
+                  f"sucessfully loaded! (in {1000*(time.time()-start_time):.1f}ms)")
+
 
     def check_model(self):
         """
@@ -76,6 +80,7 @@ class Model(ABC):
             log.warn("Check whether extensions are available to add to IECore!")
             log.error(f"Unsupported layers found in: {self.__class__.__name__}")
             exit()
+
 
     def preprocess_input(self, image, width=None, height=None, **kwargs):
 
@@ -104,7 +109,8 @@ class Model(ABC):
             # Pre-process single image
             model_input_dict[self.input_blob] = self.preprocess_image_input(image, width=None, height=None)
             return model_input_dict
-        
+
+
     def preprocess_image_input(self, image, width=None, height=None):
         """
         Preprocess image input (use before feeding it to the network).
@@ -118,6 +124,7 @@ class Model(ABC):
         p_frame = p_frame.transpose((2, 0, 1))
         p_frame = p_frame.reshape(1, *p_frame.shape)
         return p_frame
+
 
     def predict(self, image, request_id=0, draw_output=False, **kwargs):
         """
@@ -150,12 +157,14 @@ class Model(ABC):
             out_image, ouput = self.preprocess_output(results, image, draw_output, **kwargs)
             return out_image, ouput, inference_time_ms
 
+
     @abstractmethod
     def preprocess_output(self, results, image, draw_output=False, **kwargs):
         """
         Process model output. Additionally, draw output to the given image, if draw_output is true.
         """
         raise NotImplementedError("This method is not generally implemented!")
+
 
     @abstractmethod
     def check_input(self, image, **kwargs):

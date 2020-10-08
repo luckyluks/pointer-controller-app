@@ -7,6 +7,7 @@ import numpy as np
 
 from src.model_classes.model import Model
 
+
 class GazeEstimationModel(Model):
     """
     Class for the Gaze Estimation Model.
@@ -54,6 +55,7 @@ class GazeEstimationModel(Model):
             )
         
         return gaze_vector, image
+
 
     def check_input(self, image, **kwargs):
         """

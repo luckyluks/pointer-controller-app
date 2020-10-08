@@ -46,6 +46,7 @@ class FaceDetectionModel(Model):
                     cv2.rectangle(image, (xmin, ymin), (xmax, ymax), (0, 255, 0), 3)
         return image, coords
 
+
     def check_input(self, image, **kwargs):
         """
         Check data input.

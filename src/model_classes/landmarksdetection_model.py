@@ -7,6 +7,7 @@ import numpy as np
 
 from src.model_classes.model import Model
 
+
 class LandmarksDetectionModel(Model):
     """
     Class for the Facial Landmarks Detection Model.
@@ -79,6 +80,7 @@ class LandmarksDetectionModel(Model):
             cv2.circle(image, (face_landmarks["right_eye_x"], face_landmarks["right_eye_y"]), radius=20, color=(0, 0, 255), thickness=2)
 
         return image, face_landmarks
+
 
     def check_input(self, image, **kwargs):
         """
