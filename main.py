@@ -13,7 +13,7 @@ from src.model_classes.facedetection_model import FaceDetectionModel
 from src.model_classes.poseestimation_model import PoseEstimationModel
 from src.model_classes.landmarksdetection_model import LandmarksDetectionModel
 from src.model_classes.gazeestimation_model import GazeEstimationModel
-# from src.mouse_controller import MouseController
+from src.mouse_controller import MouseController
 
 
 def run_on_stream(args):
@@ -21,10 +21,10 @@ def run_on_stream(args):
     Run inference on stream (cam or video or image) and controll the mouse.
     """
 
-    # # Load the mouse controller
-    # mouse_controller = MouseController(
-    #     precision=args.mouse_precision, speed=args.mouse_speed
-    # )
+    # Load the mouse controller
+    mouse_controller = MouseController(
+        precision=args.mouse_precision, speed=args.mouse_speed
+    )
 
     # Detect lower log level
     low_log_level = log.getLogger().level in [log.INFO, log.DEBUG]
@@ -127,8 +127,8 @@ def run_on_stream(args):
                     )
 
                     if args.enable_mouse:
-                        print(gaze_vector)
-                        # mouse_controller.move(gaze_vector["x"], gaze_vector["y"])
+                        # print(gaze_vector)
+                        mouse_controller.move(gaze_vector["x"], gaze_vector["y"])
 
                     # Sum up inference time
                     inference_time_dict["face"].append(face_detection_time)
