@@ -285,6 +285,14 @@ def build_argparser():
                         help="(optional) Draw the prediction outputs.")
     parser.add_argument("--enable_mouse", default=False, action='store_true',
                         help="(optional) Enable mouse movement.")
+    parser.add_argument("-mp", "--mouse_precision", type=str, default="high",
+                        help="(optional) Specify the mouse precision [\"high\", \"low\", \"medium\"]"
+                             "(how much the mouse moves) if it is activated "
+                             "with \"--enable_mouse\" (\"high\" by default)")
+    parser.add_argument("-ms", "--mouse_speed", type=str, default="fast",
+                        help="(optional) Specify the mouse speed [\"fast\", \"slow\", \"medium\"]"
+                             "(how fast the mouse moves) if it is activated "
+                             "with \"--enable_mouse\" (\"fast\" by default)")
 
     parser.add_argument("-mfd", "--model_face_detection", type=str,
                         default="models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml",
