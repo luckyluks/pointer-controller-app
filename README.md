@@ -68,9 +68,13 @@ Generated with ```tree && du -sh``` the directory structure is the following:
 
 ### Installation Instructions
 
-To run this project the following setup must be completed (tested on Ubuntu 16.04):
+To run this project the following setup must be completed (tested on Ubuntu 18.04):
 
 1. **Install OpenVINO**: this depends on your distribution (Linux, Windows or Mac). A detailled installation instruction can be found at the [OpenVINO documentation](https://docs.openvinotoolkit.org/latest/install_directly.html).  A short walkthrough for Linux is given now:
+    - Move to the home directory. It will be used as the main directory for this installation process:
+        ```
+        cd ~
+        ```
     - Download the OpenVINO installer. For this project release 2020.01 was used. Find the installer download [here](https://software.intel.com/en-us/openvino-toolkit/choose-download).
         ```
         wget http://registrationcenter-download.intel.com/akdlm/irc_nas/16345/l_openvino_toolkit_p_2020.1.023_online.tgz
@@ -96,12 +100,13 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
     - Install python3 pip and virtual environment functions:
         ```
         sudo apt update
-        sudo apt-get install python3-pip python3-venv
+        sudo apt-get install git python3-pip python3-venv python3-tk python3-dev
         ```
 3. **Setup virtual environment**: use python virtual environment to encapsulate packages
-    - Create the virtual environment *openvino-venv*
+    - Move back to home directory and create the virtual environment *openvino-venv*
         ```
-        python3 -m venv openvino-env
+        cd ~
+        python3 -m venv openvino-venv
         ```
     - Add the openvino variables setup to virtual environment. Therefore, open the environment file with a text editor, e.g. ```nano openvino-venv/bin/activate``` . Then add the following line to the end of the file and save it:
         ```
@@ -109,7 +114,7 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
         ```
     - Activate the environment:
         ```
-        source openvino-env/bin/activate
+        source openvino-venv/bin/activate
         ```
 4. **Setup project files**: download the project files
     - clone the repo in the user home directory and change into the project directory
@@ -118,8 +123,9 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
         git clone https://github.com/luckyluks/pointer-controller-app.git
         cd pointer-controller-app
         ```
-    - Install pip dependencies
+    - Update pip and install pip dependencies
         ```
+        python3 -m pip install --upgrade pip
         python3 -m pip install -r requirements.txt
         ```
     - Download the required model. Optionally other models could be used and replace them.  
