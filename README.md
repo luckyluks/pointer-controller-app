@@ -40,8 +40,14 @@ Generated with ```tree && du -sh``` the directory structure is the following:
 .
 ├── README.md
 ├── bin
-│   ├── demo.mp4
+│   ├── demo_four-people_image.png
+│   ├── demo_four-people_image_out.png
 │   ├── demo_image.png
+│   ├── demo_image_out.png
+│   ├── demo_no-face_image.png
+│   ├── demo_no-face_image_out.png
+│   ├── demo_video.mp4
+│   ├── demo_video_output.mp4
 │   └── readme_data_pipeline.png
 ├── download_models.sh
 ├── main.py
@@ -129,9 +135,64 @@ To run this project the following setup must be completed (tested on Ubuntu 16.0
 The integrated argument parser returns a description of the available command line arguments.  
 You can see them with ```python3 main.py --help``` 
 
-**TODO**
 ```
-asdasdasdasd 
+usage: main.py [-h] -i INPUT [-o OUTPUT] [-l CPU_EXTENSION] [-d DEVICE]
+               [-p PRECISION] [-pt PROB_THRESHOLD] [-dp] [-em]
+               [-mfd MODEL_FACE_DETECTION] [-mpe MODEL_POSE_ESTIMATION]
+               [-mle MODEL_LANDMARKS_DETECTION] [-mge MODEL_GAZE_ESTIMATION]
+               [-db] [-v] [--print_stats]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Path to image file OR video file OR camera stream. For
+                        stream use "CAM" as input!
+  -o OUTPUT, --output OUTPUT
+                        (optional) Path to save the output video to
+  -l CPU_EXTENSION, --cpu_extension CPU_EXTENSION
+                        (optional) MKLDNN (CPU)-targeted custom
+                        layers.Absolute path to a shared library with
+                        thekernels impl.
+  -d DEVICE, --device DEVICE
+                        (optional) Specify the target device to infer on: CPU,
+                        GPU, FPGA or MYRIAD is acceptable. Sample will look
+                        for a suitable plugin for device specified (CPU by
+                        default)
+  -p PRECISION, --precision PRECISION
+                        (optional) Specify the model inference precision:
+                        either one-for-all, like FP32 or FP16 (FP32 by
+                        default), or per-model seprated with "/" symbol, like
+                        FP32&FP16&FP16&FP16.WARNING: Only works with default
+                        model paths from download_models.sh
+  -pt PROB_THRESHOLD, --prob_threshold PROB_THRESHOLD
+                        (optional) Set probability threshold for detections
+                        filtering(0.5 by default)
+  -dp, --draw_prediction
+                        (optional) Draw the prediction outputs.
+  -em, --enable_mouse   (optional) Enable mouse movement.
+  -mfd MODEL_FACE_DETECTION, --model_face_detection MODEL_FACE_DETECTION
+                        (optional) Set path to an xml file with a trained face
+                        detection model. Default is the FP32 face-detection-
+                        adas-binary-0001
+  -mpe MODEL_POSE_ESTIMATION, --model_pose_estimation MODEL_POSE_ESTIMATION
+                        (optional) Set path to an xml file with a trained pose
+                        estimation model. Default is the FP32 head-pose-
+                        estimation-adas-0001
+  -mle MODEL_LANDMARKS_DETECTION, --model_landmarks_detection MODEL_LANDMARKS_DETECTION
+                        (optional) Set path to an xml file with a trained
+                        landmarks detection model. Default is the FP32
+                        landmarks-regression-retail-0009
+  -mge MODEL_GAZE_ESTIMATION, --model_gaze_estimation MODEL_GAZE_ESTIMATION
+                        (optional) Set path to an xml file with a trained gaze
+                        estimation model. Default is the FP32 gaze-estimation-
+                        adas-0002.xml
+  -db, --debug          (optional) Sets loging level to DEBUG, instead of
+                        WARNING (for developers).
+  -v, --verbose         (optional) Sets loging level to INFO, instead of
+                        WARNING (for users).
+  --print_stats         (optional) Verbose OpenVINO layer performance stats.
+                        WARNING: better pass output to file, to avoid spamming
+                        the log!
 ```
 
 ### Basic Run on Camera or Video or Image
@@ -209,13 +270,7 @@ it increases and decreases for decreasing precision
 - the inference time decreases, but only slightly (*~0.1ms* per model)
 - in total this reduces the inference time (per frame) by roughly *1ms*
 
-## Stand Out Suggestions
-This is where you can provide information about the stand out suggestions that you have attempted.
-
-### Async Inference
-If you have used Async Inference in your code, benchmark the results and explain its effects on power and performance of your project.
-
-### Edge Cases
+## Edge Cases
 There are certain situations that can break the inference flow:
 - **lightning changes**: this could affect the prediction/estimation accuracy of the different networks, e.g. input with few contrast could be insufficient to detect/estimate correctly, since vision decide based models are based on colors and contrats.  
 Because this is heavily depended on the input used, furthermore the camera which records the input, this topic was not improved during this project.
