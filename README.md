@@ -12,7 +12,7 @@ This project demonstrates the ability of creating a data pipeline that can handl
 | Device (OpenVINO) Used: | CPU |
 
 ## How it works
-This project builds on the inference engine of the [Intel OpenVINO™ toolkit] (https://docs.openvinotoolkit.org/).
+This project builds on the inference engine of the [Intel OpenVINO™ toolkit](https://docs.openvinotoolkit.org/).
 
 As input for the app, the user can specify a data source (camera stream, video file or image).  
 OpenCV is used for handling this user data in a data pipline, as presented in the following flow chart:
