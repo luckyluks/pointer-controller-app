@@ -28,6 +28,7 @@ class Model(ABC):
         self.input_shape = None
         self.output_blob = None
         self.output_shape = None
+        self.performance_stats = {}
         self.model = None
         self.probability_threshold = probability_threshold
         self.precision = precision
@@ -184,6 +185,7 @@ class Model(ABC):
             results = {}
             for output_name in self.model.outputs.keys():
                 results[output_name] = self.network.requests[request_id].outputs[output_name]
+                self.performance_stats[output_name] = self.network.requests[request_id].get_perf_counts()
             
             # Process output
             out_image, ouput = self.preprocess_output(results, image, draw_output, **kwargs)
