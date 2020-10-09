@@ -6,14 +6,14 @@ import numpy as np
 import logging as log
 from tqdm import tqdm
 from argparse import ArgumentParser
-from src.input_feeder import InputFeeder
 
+from src.input_feeder import InputFeeder
 from src.model_classes.facedetection_model import FaceDetectionModel
 from src.model_classes.poseestimation_model import PoseEstimationModel
 from src.model_classes.landmarksdetection_model import LandmarksDetectionModel
 from src.model_classes.gazeestimation_model import GazeEstimationModel
-
 # from src.mouse_controller import MouseController
+
 
 def run_on_stream(args):
     """
@@ -32,13 +32,14 @@ def run_on_stream(args):
              f"draw predicition results: {args.draw_prediction} {'='*10}")
 
     # Load the models
-    model_face_detection = FaceDetectionModel(args.model_face_detection)
+    precisions = parse_precisions(args.precision)
+    model_face_detection = FaceDetectionModel(args.model_face_detection, precision=precisions["face"])
     model_face_detection.load_model()
-    model_pose_estimation = PoseEstimationModel(args.model_pose_estimation)
+    model_pose_estimation = PoseEstimationModel(args.model_pose_estimation, precision=precisions["pose"])
     model_pose_estimation.load_model()
-    model_landmarks_detection = LandmarksDetectionModel(args.model_landmarks_detection)
+    model_landmarks_detection = LandmarksDetectionModel(args.model_landmarks_detection, precision=precisions["landmarks"])
     model_landmarks_detection.load_model()
-    model_gaze_estimation = GazeEstimationModel(args.model_gaze_estimation)
+    model_gaze_estimation = GazeEstimationModel(args.model_gaze_estimation, precision=precisions["gaze"])
     model_gaze_estimation.load_model()
 
     # Open input stream
@@ -113,16 +114,11 @@ def run_on_stream(args):
 
                     # # TODO Do gaze estimation
                     _, gaze_vector, gaze_estimation_time = model_gaze_estimation.predict(
-                        batch,
+                        face,
                         draw_output=args.draw_prediction,
-                        face=face,
                         landmarks=landmarks_info,
                         pose=pose_angels
                     )
-
-                    # if args.debug:
-                    #     head_pose_estimation.show_text(frame, head_pose_angles)
-                    #     gaze_estimation.show_text(frame, gaze_vector)
 
                     if args.enable_mouse:
                         print(gaze_vector)
@@ -168,6 +164,7 @@ def run_on_stream(args):
         if output_stream:
             output_stream.release()
 
+        # Close progress bar if present
         if low_log_level:
             pbar.close()
     
@@ -210,7 +207,33 @@ def open_output(file_path, fps, frame_size):
         
         log.info(f"Output stream is open: \"{file_path}\"")
     return output_stream
-    
+
+
+def parse_precisions(precisions_input):
+    """
+    Tries to parse the given precisions input:
+    either one-for-all, like FP32 or FP16 (FP32 by default),
+    or per-model seprated with \"&\" symbol, like FP32&FP16&FP16&FP16.
+    """
+    if precisions_input.count("/") == 3:
+        precisions_tokens = precisions_input.split("/")
+        return {
+            "face": precisions_tokens[0],
+            "pose": precisions_tokens[1],
+            "landmarks": precisions_tokens[2],
+            "gaze": precisions_tokens[3]
+        }
+
+    else:
+        return {
+            "face": "FP32",
+            "pose": "FP32",
+            "landmarks": "FP32",
+            "gaze": "FP32",
+        }
+
+
+
 
 def build_argparser():
     """
@@ -218,15 +241,6 @@ def build_argparser():
     :return: command line arguments
     """
     parser = ArgumentParser()
-    parser.add_argument("-mfd", "--model_face_detection", required=True, type=str,
-                        help="Path to an xml file with a trained model.")
-    parser.add_argument("-mpe", "--model_pose_estimation", required=True, type=str,
-                        help="Path to an xml file with a trained model.")
-    parser.add_argument("-mle", "--model_landmarks_detection", required=True, type=str,
-                        help="Path to an xml file with a trained model.")
-    parser.add_argument("-mge", "--model_gaze_estimation", required=True, type=str,
-                        help="Path to an xml file with a trained model.")
-
     parser.add_argument("-i", "--input", required=True, type=str,
                         help="Path to image file OR video file OR camera "
                              "stream. For stream use \"CAM\" as input!")
@@ -243,14 +257,36 @@ def build_argparser():
                              "CPU, GPU, FPGA or MYRIAD is acceptable. Sample "
                              "will look for a suitable plugin for device "
                              "specified (CPU by default)")
+    parser.add_argument("-p", "--precision", type=str, default="FP32",
+                        help="(optional) Specify the model inference precision: "
+                             "either one-for-all, like FP32 or FP16 (FP32 by default), "
+                             "or per-model seprated with \"/\" symbol, like FP32&FP16&FP16&FP16."
+                             "WARNING: Only works with default model paths from download_models.sh")
     parser.add_argument("-pt", "--prob_threshold", type=float, default=0.5,
                         help="(optional) Set probability threshold for detections filtering"
                              "(0.5 by default)")
-
+    
     parser.add_argument("-dp", "--draw_prediction", default=False, action='store_true',
                         help="(optional) Draw the prediction outputs.")
     parser.add_argument("-em", "--enable_mouse", default=False, action='store_true',
                         help="(optional) Enable mouse movement.")
+
+    parser.add_argument("-mfd", "--model_face_detection", type=str,
+                        default="models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml",
+                        help="(optional) Set path to an xml file with a trained face detection model. "
+                             "Default is the FP32 face-detection-adas-binary-0001")
+    parser.add_argument("-mpe", "--model_pose_estimation", type=str,
+                        default="models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml",
+                        help="(optional) Set path to an xml file with a trained pose estimation model. "
+                             "Default is the FP32 head-pose-estimation-adas-0001")
+    parser.add_argument("-mle", "--model_landmarks_detection", type=str,
+                        default="models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml",
+                        help="(optional) Set path to an xml file with a trained landmarks detection model. "
+                             "Default is the FP32 landmarks-regression-retail-0009")
+    parser.add_argument("-mge", "--model_gaze_estimation", type=str,
+                        default="models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml",
+                        help="(optional) Set path to an xml file with a trained gaze estimation model. "
+                             "Default is the FP32 gaze-estimation-adas-0002.xml")
 
     parser.add_argument('-db', '--debug', action="store_const",
                         dest="log_level", const=log.DEBUG, default=log.WARNING,
@@ -262,6 +298,7 @@ def build_argparser():
                         "instead of WARNING (for users).")
     
     return parser
+
 
 if __name__ == "__main__":
     main()

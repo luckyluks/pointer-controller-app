@@ -1,4 +1,5 @@
 import os
+import re
 import sys
 import time
 import cv2
@@ -15,7 +16,7 @@ class Model(ABC):
     This is the base model class, which can be used to inherit basic model utilities.
     The class is based on the Abstract Base Class (ABC), which allows to use abstract (placeholder) methods.
     """
-    def __init__(self, model_name, device="CPU", extensions=None, probability_threshold=0.5):
+    def __init__(self, model_name, precision, device="CPU", extensions=None, probability_threshold=0.5):
         """
         Set the model instance variables.
         """
@@ -28,9 +29,40 @@ class Model(ABC):
         self.output_blob = None
         self.output_shape = None
         self.model = None
-        self.model_xml = model_name
-        self.model_bin = os.path.splitext(self.model_xml)[0] + ".bin"
         self.probability_threshold = probability_threshold
+        self.precision = precision
+        
+        # Check if requested precision is available.
+        # WARNING: potentially only works with orginal paths from model downloader
+        try:
+            # tokenize model path to find a "precision"-directory
+            path_tokens = model_name.split(os.sep)
+            # if precision is already in a token, then skip digging deeper
+            if not any([precision in token for token in path_tokens]):
+                # scan tokens for a "precision"-directory
+                token_idx = [idx for idx,token in enumerate(path_tokens) if any(re.findall(r'FP\d+|INT\d+', token))]
+                # change folder tokens to new precision
+                for idx in token_idx:
+                    path_tokens[idx] = precision
+                # set path with new "precision"-folder
+                self.model_xml = os.sep.join(path_tokens)
+                self.model_bin = os.path.splitext(self.model_xml)[0] + ".bin"
+                # Check if auto-generated paths exist
+                if (not os.path.isfile(self.model_xml)) or (not os.path.isfile(self.model_bin)):
+                    msg = f"One of these (auto-generated) model files does not exist: " \
+                          f"\n1:\"{self.model_xml}\"\n2:\"{self.model_bin}\""
+                    log.error(msg)
+                    raise FileNotFoundError(msg)
+            else:
+                self.model_xml = model_name
+                self.model_bin = os.path.splitext(self.model_xml)[0] + ".bin"
+
+        except Exception as e:
+            # if changing to requested precision fails, fallback to given model paths
+            log.warn(f"Could not automatically check/change the given precision \"{precision}\" "
+                        f"for model \"{self.__class__.__name__}\". Using given model path!")
+            self.model_xml = model_name
+            self.model_bin = os.path.splitext(self.model_xml)[0] + ".bin"
 
     def load_model(self):
         """
@@ -57,7 +89,7 @@ class Model(ABC):
         self.output_shape = self.network.outputs[self.output_blob].shape
 
         # Print debug
-        log.debug(f"Model \"{self.__class__.__name__}\": "
+        log.debug(f"Model \"{self.__class__.__name__}\" ({self.precision}): "
                   f"sucessfully loaded! (in {1000*(time.time()-start_time):.1f}ms)")
 
 
