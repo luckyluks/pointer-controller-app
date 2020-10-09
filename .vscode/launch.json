@@ -8,18 +8,14 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "args":[
-                "--model_face_detection", "models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml",
-                "--model_pose_estimation", "models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml",
-                "--model_landmarks_detection", "models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml",
-                "--model_gaze_estimation", "models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml",
                 "--input", "bin/demo_video.mp4",
-                // "--input", "cam",
-                // "--input", "bin/demo_image.png",
-                "--output", "bin/video_output.mp4",
+                "--output", "bin/demo_video_output.mp4",
                 "--draw_prediction",
                 // "--enable_mouse",
                 // "--verbose",
                 "--debug",
+                "--precision", "FP32/FP32/FP32/FP32", // "FP32/FP32/FP32/FP32" // "FP32/FP16/FP16/FP16"
+                // "--print_stats"
             ],
         },
         {
@@ -29,16 +25,15 @@
             "program": "main.py",
             "console": "integratedTerminal",
             "args":[
-                "--model_face_detection", "models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml",
-                "--model_pose_estimation", "models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml",
-                "--model_landmarks_detection", "models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml",
-                "--model_gaze_estimation", "models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml",
-                "--input", "bin/two_people_Test.jpg",
-                "--output", "bin/video_output.jpg",
+                // "--input", "bin/demo_image.png",
+                "--input", "bin/demo_image.png",
+                "--output", "bin/demo_image_out.png",
                 "--draw_prediction",
                 // "--enable_mouse",
                 // "--verbose",
                 "--debug",
+                "--precision", "FP32/FP16/FP16/FP16",
+                "--print_stats"
             ],
         }
     ]
