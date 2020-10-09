@@ -144,9 +144,10 @@ You can see them with ```python3 main.py --help```
 ```
 usage: main.py [-h] -i INPUT [-o OUTPUT] [-l CPU_EXTENSION] [-d DEVICE]
                [-p PRECISION] [-pt PROB_THRESHOLD] [--draw_prediction]
-               [--enable_mouse] [-mfd MODEL_FACE_DETECTION]
-               [-mpe MODEL_POSE_ESTIMATION] [-mle MODEL_LANDMARKS_DETECTION]
-               [-mge MODEL_GAZE_ESTIMATION] [-db] [-v] [--print_stats]
+               [--enable_mouse] [-mp MOUSE_PRECISION] [-ms MOUSE_SPEED]
+               [-mfd MODEL_FACE_DETECTION] [-mpe MODEL_POSE_ESTIMATION]
+               [-mle MODEL_LANDMARKS_DETECTION] [-mge MODEL_GAZE_ESTIMATION]
+               [-db] [-v] [--print_stats]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -175,6 +176,14 @@ optional arguments:
                         filtering(0.5 by default)
   --draw_prediction     (optional) Draw the prediction outputs.
   --enable_mouse        (optional) Enable mouse movement.
+  -mp MOUSE_PRECISION, --mouse_precision MOUSE_PRECISION
+                        (optional) Specify the mouse precision ["high", "low",
+                        "medium"](how much the mouse moves) if it is activated
+                        with "--enable_mouse" ("high" by default)
+  -ms MOUSE_SPEED, --mouse_speed MOUSE_SPEED
+                        (optional) Specify the mouse speed ["fast", "slow",
+                        "medium"](how fast the mouse moves) if it is activated
+                        with "--enable_mouse" ("fast" by default)
   -mfd MODEL_FACE_DETECTION, --model_face_detection MODEL_FACE_DETECTION
                         (optional) Set path to an xml file with a trained face
                         detection model. Default is the FP32 face-detection-
@@ -201,35 +210,27 @@ optional arguments:
 ```
 
 ### Basic Run on Camera or Video or Image
-- A basic example to run the application on a camera stream is:
+- A basic example to run the application on a camera stream, output the prediction as video, log debug info and move the mouse:
     ```
     python3 main.py \
-    --model_face_detection models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \
-    --model_pose_estimation models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml \
-    --model_landmarks_detection models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml \
-    --model_gaze_estimation models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml --input cam \
+    --input cam \
     --output bin/cam_output.mp4 \
     --draw_prediction \
+    --enable_mouse \
     --debug
     ```
-- A basic example to run the application on a video file is:
+- A basic example to run the application on a video file, output the prediction in a video file and log debug info:
     ```
     python3 main.py \
-    --model_face_detection models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \
-    --model_pose_estimation models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml \
-    --model_landmarks_detection models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml \
-    --model_gaze_estimation models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml --input bin/demo_video.mp4 \
+    --input bin/demo_video.mp4 \
     --output bin/demo_video_output.mp4 \
     --draw_prediction \
     --debug
     ```
-- A basic example to run the application on a image file is:
+- A basic example to run the application on a image file, output the prediction in a image and log debug info:
     ```
     python3 main.py \
-    --model_face_detection models/intel/face-detection-adas-binary-0001/FP32-INT1/face-detection-adas-binary-0001.xml \
-    --model_pose_estimation models/intel/head-pose-estimation-adas-0001/FP32/head-pose-estimation-adas-0001.xml \
-    --model_landmarks_detection models/intel/landmarks-regression-retail-0009/FP32/landmarks-regression-retail-0009.xml \
-    --model_gaze_estimation models/intel/gaze-estimation-adas-0002/FP32/gaze-estimation-adas-0002.xml --input bin/demo_image.png \
+    --input bin/demo_image.png \
     --output bin/demo_image_out.png \
     --draw_prediction \
     --debug
