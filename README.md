@@ -171,10 +171,43 @@ asdasdasdasd
 
 
 ## Benchmarks
-*TODO:* Include the benchmark results of running your model on multiple hardwares and multiple model precisions. Your benchmarks can include: model loading time, input/output processing time, model inference time etc.
+To test different model precisions for the used OpenVINO models, the application has been used with the sample video file ```bin/demo_video.mp4``` . A comparison of the FP32 to available FP16 precision is given below, regarding model size, model loading time and average inference time per model/per frame.  
+The benchmark test was run on a *Intel(R) Core(TM) i5-6300U*.
 
-## Results
-*TODO:* Discuss the benchmark results and explain why you are getting the results you are getting. For instance, explain why there is difference in inference time for FP32, FP16 and INT8 models.
+### 1: Running sample video with FP32 on all models
+
+| Model Name | Model Precision | Model Size | Load Time | Inference Time |
+|---|---|---|---|---|
+| face-detection-adas-binary-0001 | FP32-INT1 | 1.8Mb | 163.9ms | 21.6ms |
+| head-pose-estimation-adas-0001 | FP32 | 7.5Mb | 50.4ms | 2.0ms |
+| landmarks-regression-retail-0009 | FP32 | 0.8Mb | 38.4ms | 0.9ms |
+| gaze-estimation-adas-0002 | FP32 | 7.3Mb | 64.9ms | 2.4ms |
+
+| Details |   |
+|---|---|
+| Total Processing Time: | 30.65s |
+| Average Inference Time: | 26.9ms |
+
+### 2: Running sample video with FP32/FP16
+
+| Model Name | Model Precision | Model Size | Load Time | Inference Time |
+|---|---|---|---|---|
+| face-detection-adas-binary-0001 | FP32-INT1 | 1.8Mb | 158.5ms | 20.9ms |
+| head-pose-estimation-adas-0001 | FP16 | 3.8Mb | 65.5ms | 1.9ms |
+| landmarks-regression-retail-0009 | FP16 | 0.4Mb | 42.5ms | 0.8ms |
+| gaze-estimation-adas-0002 | FP16 | 3.7Mb | 79.9ms | 2.3ms |
+
+| Details |   |
+|---|---|
+| Total Processing Time: | 29.58s |
+| Average Inference Time: | 26.0ms |
+
+It can be seen, that:
+- reducing the precision from FP32 to FP16 reduces the model size by *50%*
+- the loading time is rather independed from the precision:  
+it increases and decreases for decreasing precision
+- the inference time decreases, but only slightly (*~0.1ms* per model)
+- in total this reduces the inference time (per frame) by roughly *1ms*
 
 ## Stand Out Suggestions
 This is where you can provide information about the stand out suggestions that you have attempted.
@@ -183,4 +216,15 @@ This is where you can provide information about the stand out suggestions that y
 If you have used Async Inference in your code, benchmark the results and explain its effects on power and performance of your project.
 
 ### Edge Cases
-There will be certain situations that will break your inference flow. For instance, lighting changes or multiple people in the frame. Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust...
+There are certain situations that can break the inference flow:
+- **lightning changes**: this could affect the prediction/estimation accuracy of the different networks, e.g. input with few contrast could be insufficient to detect/estimate correctly, since vision decide based models are based on colors and contrats.  
+Because this is heavily depended on the input used, furthermore the camera which records the input, this topic was not improved during this project.
+- **no face in frame**: if the face detection does not detect a face in the frame, the data should not be passed to sequential models in order to avoid wrong gaze estimation or raising errors.  
+This can be fixed with a simple condition if the detection detected a face, and if not skip the further processing.  
+A test sample is included: ```bin/demo_no-face_image.png```  
+![no face result image](/bin/demo_no-face_image_out.png)
+- **multiple faces in frame**: if the face detection detects more than one face, the inference should be runned on each face, clearly separted to no mix up facial details between the faces.  
+This can be easily implemented with a for loop, over all detected faces. Of course, this extends the inference time per frame if multiple faces are detected.  
+A test sample is included: ```bin/demo_four-people_image.png```  
+![no face result image](/bin/demo_four-people_image_out.png)
+Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust...
