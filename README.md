@@ -222,9 +222,8 @@ Because this is heavily depended on the input used, furthermore the camera which
 - **no face in frame**: if the face detection does not detect a face in the frame, the data should not be passed to sequential models in order to avoid wrong gaze estimation or raising errors.  
 This can be fixed with a simple condition if the detection detected a face, and if not skip the further processing.  
 A test sample is included: ```bin/demo_no-face_image.png```  
-![no face result image](/bin/demo_no-face_image_out.png)
+[<img src="/bin/demo_no-face_image_out.png" width="500"/>](/bin/demo_no-face_image_out.png)
 - **multiple faces in frame**: if the face detection detects more than one face, the inference should be runned on each face, clearly separted to no mix up facial details between the faces.  
 This can be easily implemented with a for loop, over all detected faces. Of course, this extends the inference time per frame if multiple faces are detected.  
 A test sample is included: ```bin/demo_four-people_image.png```  
-![no face result image](/bin/demo_four-people_image_out.png)
-Explain some of the edge cases you encountered in your project and how you solved them to make your project more robust...
+[<img src="/bin/demo_four-people_image.png" width="500"/>](/bin/demo_four-people_image.png)
