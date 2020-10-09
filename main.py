@@ -6,6 +6,7 @@ import numpy as np
 import logging as log
 from tqdm import tqdm
 from argparse import ArgumentParser
+from pprint import pprint
 
 from src.input_feeder import InputFeeder
 from src.model_classes.facedetection_model import FaceDetectionModel
@@ -49,13 +50,14 @@ def run_on_stream(args):
     # Open output stream (is None if image)
     output_stream = open_output(args.output, fps, input_frame_format)
 
-    # Create vars to collect inference time
+    # Create vars to collect inference time (intialize as 0 to avoid errors)
+    total_inference_time = 0
     inference_time_dict = {
-        "face" : [],
-        "pose" : [],
-        "landsmarks" : [],
-        "gaze" : [],
-        "total" : []
+        "face" : [0],
+        "pose" : [0],
+        "landmarks" : [0],
+        "gaze" : [0],
+        "total" : [0]
     }
         
     # Create progress bar
@@ -65,7 +67,7 @@ def run_on_stream(args):
 
     # Start inference time
     time_start = time.time()
-
+    
     # Catch unexpected behaviour at the inference
     try:
         # Fetch next frame batch
@@ -81,6 +83,10 @@ def run_on_stream(args):
                 log.info("Input stream ended!")
                 log.info(f"Total processing time elapsed: {time.time()-time_start :.2f}s")
                 log.info(f"Average inference time: {np.mean(inference_time_dict['total']):.1f}ms")
+                log.info(f"(face:{np.mean(inference_time_dict['face']):.1f}ms, "
+                         f"pose:{np.mean(inference_time_dict['pose']):.1f}ms, "
+                         f"landmarks:{np.mean(inference_time_dict['landmarks']):.1f}ms, "
+                         f"gaze:{np.mean(inference_time_dict['gaze']):.1f}ms)")
                 break
 
             # Do face detection
@@ -124,17 +130,26 @@ def run_on_stream(args):
                         print(gaze_vector)
                         # mouse_controller.move(gaze_vector["x"], gaze_vector["y"])
 
-            # Sum up inference time
-            inference_time_dict["face"].append(face_detection_time)
-            inference_time_dict["pose"].append(pose_estimation_time)
-            inference_time_dict["landsmarks"].append(landmarks_detection_time)
-            inference_time_dict["gaze"].append(gaze_estimation_time)
-            
-            total_inference_time = face_detection_time \
-                                   + pose_estimation_time \
-                                   + landmarks_detection_time \
-                                   + gaze_estimation_time
-            inference_time_dict["total"].append(total_inference_time)
+                    # Sum up inference time
+                    inference_time_dict["face"].append(face_detection_time)
+                    inference_time_dict["pose"].append(pose_estimation_time)
+                    inference_time_dict["landmarks"].append(landmarks_detection_time)
+                    inference_time_dict["gaze"].append(gaze_estimation_time)
+                    
+                    total_inference_time = face_detection_time \
+                                        + pose_estimation_time \
+                                        + landmarks_detection_time \
+                                        + gaze_estimation_time
+                    inference_time_dict["total"].append(total_inference_time)
+
+                    if args.print_stats:
+                        stats = {
+                            "face_detection": model_face_detection.performance_stats,
+                            "head_pose_estimation": model_pose_estimation.performance_stats,
+                            "facial_landmarks": model_landmarks_detection.performance_stats,
+                            "gaze_estimation": model_gaze_estimation.performance_stats,
+                        }
+                        pprint(stats)
 
             # Write on disk (if fps is 1, then the output is image!)
             if args.output:
@@ -296,7 +311,9 @@ def build_argparser():
                         dest="log_level", const=log.INFO,
                         help="(optional) Sets loging level to INFO, "
                         "instead of WARNING (for users).")
-    
+    parser.add_argument("--print_stats", default=False, action="store_true",
+                        help="(optional) Verbose OpenVINO layer performance stats. "
+                        "WARNING: better pass output to file, to avoid spamming the log!")
     return parser
 
 
