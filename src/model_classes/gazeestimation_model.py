@@ -54,7 +54,7 @@ class GazeEstimationModel(Model):
                 tipLength=0.2,
             )
         
-        return gaze_vector, image
+        return image, gaze_vector
 
 
     def check_input(self, image, **kwargs):
