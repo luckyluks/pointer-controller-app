@@ -226,4 +226,4 @@ A test sample is included: ```bin/demo_no-face_image.png```
 - **multiple faces in frame**: if the face detection detects more than one face, the inference should be runned on each face, clearly separted to no mix up facial details between the faces.  
 This can be easily implemented with a for loop, over all detected faces. Of course, this extends the inference time per frame if multiple faces are detected.  
 A test sample is included: ```bin/demo_four-people_image.png```  
-[<img src="/bin/demo_four-people_image.png" width="500"/>](/bin/demo_four-people_image.png)
+[<img src="/bin/demo_four-people_image_out.png" width="500"/>](/bin/demo_four-people_image_out.png)
