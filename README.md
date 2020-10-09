@@ -137,10 +137,10 @@ You can see them with ```python3 main.py --help```
 
 ```
 usage: main.py [-h] -i INPUT [-o OUTPUT] [-l CPU_EXTENSION] [-d DEVICE]
-               [-p PRECISION] [-pt PROB_THRESHOLD] [-dp] [-em]
-               [-mfd MODEL_FACE_DETECTION] [-mpe MODEL_POSE_ESTIMATION]
-               [-mle MODEL_LANDMARKS_DETECTION] [-mge MODEL_GAZE_ESTIMATION]
-               [-db] [-v] [--print_stats]
+               [-p PRECISION] [-pt PROB_THRESHOLD] [--draw_prediction]
+               [--enable_mouse] [-mfd MODEL_FACE_DETECTION]
+               [-mpe MODEL_POSE_ESTIMATION] [-mle MODEL_LANDMARKS_DETECTION]
+               [-mge MODEL_GAZE_ESTIMATION] [-db] [-v] [--print_stats]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -167,9 +167,8 @@ optional arguments:
   -pt PROB_THRESHOLD, --prob_threshold PROB_THRESHOLD
                         (optional) Set probability threshold for detections
                         filtering(0.5 by default)
-  -dp, --draw_prediction
-                        (optional) Draw the prediction outputs.
-  -em, --enable_mouse   (optional) Enable mouse movement.
+  --draw_prediction     (optional) Draw the prediction outputs.
+  --enable_mouse        (optional) Enable mouse movement.
   -mfd MODEL_FACE_DETECTION, --model_face_detection MODEL_FACE_DETECTION
                         (optional) Set path to an xml file with a trained face
                         detection model. Default is the FP32 face-detection-
