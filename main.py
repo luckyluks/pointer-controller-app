@@ -281,9 +281,9 @@ def build_argparser():
                         help="(optional) Set probability threshold for detections filtering"
                              "(0.5 by default)")
     
-    parser.add_argument("-dp", "--draw_prediction", default=False, action='store_true',
+    parser.add_argument("--draw_prediction", default=False, action='store_true',
                         help="(optional) Draw the prediction outputs.")
-    parser.add_argument("-em", "--enable_mouse", default=False, action='store_true',
+    parser.add_argument("--enable_mouse", default=False, action='store_true',
                         help="(optional) Enable mouse movement.")
 
     parser.add_argument("-mfd", "--model_face_detection", type=str,
