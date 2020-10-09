@@ -1,11 +1,8 @@
 image==1.5.27
 ipdb==0.12.3
-ipython==7.10.2
-numpy==1.17.4
-Pillow==6.2.1
+opencv-python==4.4.0.44
+PyAutoGUI==0.9.50
+PyYAML==5.3.1
+python-xlib==0.28
+tqdm==4.50.0
 requests==2.22.0
-virtualenv==16.7.9
-pyautogui
-pyyaml 
-opencv-python
-tqdm
