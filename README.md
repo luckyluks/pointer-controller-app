@@ -17,7 +17,7 @@ This project builds on the inference engine of the [Intel OpenVINO™ toolkit](h
 As input for the app, the user can specify a data source (camera stream, video file or image).  
 OpenCV is used for handling this user data in a data pipline, as presented in the following flow chart:
 
-![data_pipeline](/bin/readme_data_pipeline.png)
+![data_pipeline](./bin/readme_data_pipeline.png)
 
 The gaze estimation model (in this project: [gaze-estimation-adas-0002](https://docs.openvinotoolkit.org/latest/omz_models_intel_gaze_estimation_adas_0002_description_gaze_estimation_adas_0002.html)) requires **three** inputs (head pose, left eye image, right eye image) and is therefore supported by **three** other OpenVINO models in this project.
 1. **Face detection model**: to detect the face of a person in the data  
@@ -282,9 +282,9 @@ There are certain situations that can break the inference flow:
 Because this is heavily depended on the input used, furthermore the camera which records the input, this topic was not improved during this project.
 - **no face in frame**: if the face detection does not detect a face in the frame, the data should not be passed to sequential models in order to avoid wrong gaze estimation or raising errors.  
 This can be fixed with a simple condition if the detection detected a face, and if not skip the further processing.  
-A test sample is included: ```bin/demo_no-face_image.png```  
-[<img src="/bin/demo_no-face_image_out.png" width="500"/>](/bin/demo_no-face_image_out.png)
+A test sample is included: ```./bin/demo_no-face_image.png```  
+[<img src="./bin/demo_no-face_image_out.png" width="500"/>](./bin/demo_no-face_image_out.png)
 - **multiple faces in frame**: if the face detection detects more than one face, the inference should be runned on each face, clearly separted to no mix up facial details between the faces.  
 This can be easily implemented with a for loop, over all detected faces. Of course, this extends the inference time per frame if multiple faces are detected.  
-A test sample is included: ```bin/demo_four-people_image.png```  
-[<img src="/bin/demo_four-people_image_out.png" width="500"/>](/bin/demo_four-people_image_out.png)
+A test sample is included: ```./bin/demo_four-people_image.png```  
+[<img src="./bin/demo_four-people_image_out.png" width="500"/>](./bin/demo_four-people_image_out.png)
